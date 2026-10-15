@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "bun check",
     "fmt": "prettier --write .",
-    "test": "bun run vitest"
+    "test": "bun run vitest",
+    "dev": "bun run index.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
