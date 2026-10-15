@@ -3,7 +3,8 @@ import { pinoHttp } from "pino-http";
 
 export function createServer() {
   const server = express();
-server.use(pinoHttp())
+
+  server.use(pinoHttp())
   server.get("/wild", (req, res) => {
     res.json({
       id: 25,
@@ -13,6 +14,17 @@ server.use(pinoHttp())
       stats: [{ stat: { name: "hp" }, base_stat: 35 }],
     });
   });
+
+  server.post("/capture/:id", (req, res) => {
+    if (Number.parseInt(req.params.id) != 25) {
+        res.status(404)
+        res.json({})
+    } else {
+        res.json({})
+    }
+  })
+
+
 
   return server;
 }

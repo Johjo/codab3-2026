@@ -24,4 +24,20 @@ describe("Pokemon api", () => {
       });
     });
   });
+
+  describe("capture", () => {
+    it("tell ok if good pokemon", async () => {
+        const response = await request(createServer()).post("/capture/25");
+        
+        expect(response.status).toEqual(200);        
+    })
+
+    it("tell not found if bad pokemon", async () => {
+        const response = await request(createServer()).post("/capture/297");
+        
+        expect(response.status).toEqual(404);        
+    })
+
+    
+  })
 });
