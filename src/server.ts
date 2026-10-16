@@ -1,10 +1,23 @@
 import express from "express";
 import { pinoHttp } from "pino-http";
+import * as z from "zod"
+
+function errorHandler(err: Error, req: any, res: any, next: any) {
+    res.status(410)
+      res.json({error: "Pokemon has gone"});
+}
+
+const Pokemon = z.object({ 
+  id: z.number(),
+  name: z.string()
+});
 
 export function createServer() {
   const server = express();
 
   server.use(pinoHttp())
+  server.use(express.json())
+
   server.get("/wild", (req, res) => {
     res.json({
       id: 25,
@@ -15,16 +28,37 @@ export function createServer() {
     });
   });
 
-  server.post("/capture/:id", (req, res) => {
-    if (Number.parseInt(req.params.id) != 25) {
-        res.status(404)
-        res.json({})
-    } else {
-        res.json({})
+  server.post("/mirror", (req, res, next) => {
+    res.status(200)
+    try {
+      const pokemon = Pokemon.parse(req.body)
+      res.json(pokemon)
+    } catch (err) {
+      res.status(400)
+      res.json()
+    }
+  })  
+
+  server.post("/capture/:id", (req, res, next) => {
+    try {
+        if (Number.parseInt(req.params.id) != 25) {
+            throw new Error("Not found")
+        }
+
+    res.json({})
+    } catch (err) {
+        next(err)
     }
   })
 
+    // server.use(errorHandler)
 
+  server.use((req, res, next) => {
+    res.status(404)
+    res.json({})
+    next()
+  })
 
-  return server;
+    return server;
 }
+
