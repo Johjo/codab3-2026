@@ -1,6 +1,11 @@
 import express from "express";
 import { pinoHttp } from "pino-http";
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import * as z from "zod"
+import jwt from "jsonwebtoken"
+import { randomUUID } from 'crypto';
+
+extendZodWithOpenApi(z)
 
 function errorHandler(err: Error, req: any, res: any, next: any) {
     res.status(410)
@@ -8,8 +13,8 @@ function errorHandler(err: Error, req: any, res: any, next: any) {
 }
 
 const Pokemon = z.object({ 
-  id: z.number(),
-  name: z.string()
+  id: z.number().openapi({description: "C'est l'identifiant"}),
+  name: z.string().openapi({description: "C'est le nom"})
 });
 
 export function createServer() {
@@ -38,6 +43,12 @@ export function createServer() {
       res.json()
     }
   })  
+
+  server.post("/login", (req, res, next) => {
+    const token = jwt.sign({userId: "toto", jti: randomUUID()}, "maclesecrete", { expiresIn: '1h' })
+    res.status(200)
+    res.json({token: token})
+  })
 
   server.post("/capture/:id", (req, res, next) => {
     try {

@@ -77,4 +77,26 @@ describe("zod", () => {
       
     })
   })
+
+  describe("JWT", () => {
+    it("JWT", async () => {
+      const response = (await request(createServer()).post("/login").send({id: "toto", password: "123"}));
+      expect(response.status).toEqual(200)
+
+      const Token = z.jwt()
+
+      Token.parse(response.body.token)
+      // expect(response.body.token).toEqual("...")
+    })
+
+    it("token should be different from previous", async () => {
+      const response1 = (await request(createServer()).post("/login").send({id: "toto", password: "123"}));
+      const response2 = (await request(createServer()).post("/login").send({id: "toto", password: "123"}));
+
+      const Token = z.jwt()
+
+      expect(response1.body.token).not.toEqual(response2.body.token)
+    })
+
+  })
 });
