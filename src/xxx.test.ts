@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import request from "supertest";
 import { createServer } from "./server";
 import * as z from "zod";
+import jwt from "jsonwebtoken"
+import { randomUUID } from 'crypto';
 
 
 
@@ -96,6 +98,31 @@ describe("zod", () => {
       const Token = z.jwt()
 
       expect(response1.body.token).not.toEqual(response2.body.token)
+    })
+
+  })
+
+  describe("check-me", () => {
+    it("Toto is welcome", async () => {
+      const token = jwt.sign({userId: "toto", jti: randomUUID()}, "maclesecrete", { expiresIn: '1h' })
+      
+      const response = await request(createServer()).get("/check-me").set("Authorization", "Bearer " + token)
+      expect(response.status).toEqual(200)
+      expect(response.body.user).toEqual("toto")
+      
+    })
+
+    it("Titi is not welcome", async () => {
+      const token = jwt.sign({userId: "Titi", jti: randomUUID()}, "maclesecrete", { expiresIn: '1h' })
+      
+      const response = await request(createServer()).get("/check-me").set("Authorization", "Bearer " + token)
+      expect(response.status).toEqual(403)
+    })
+
+
+    it("TotAnybody  is welcome", async () => {
+      const response = await request(createServer()).get("/check-me")
+      expect(response.status).toEqual(401)
     })
 
   })

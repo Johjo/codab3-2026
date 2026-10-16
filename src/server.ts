@@ -2,10 +2,15 @@ import express from "express";
 import { pinoHttp } from "pino-http";
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import * as z from "zod"
-import jwt from "jsonwebtoken"
+import jwt, { type JwtPayload } from "jsonwebtoken"
 import { randomUUID } from 'crypto';
 
 extendZodWithOpenApi(z)
+
+interface TokenPayload extends JwtPayload {
+  userId: string;
+  jti: string;
+}
 
 function errorHandler(err: Error, req: any, res: any, next: any) {
     res.status(410)
@@ -48,6 +53,31 @@ export function createServer() {
     const token = jwt.sign({userId: "toto", jti: randomUUID()}, "maclesecrete", { expiresIn: '1h' })
     res.status(200)
     res.json({token: token})
+  })
+
+  server.get("/check-me", (req, res) => {
+    const authorizations = req.headers.authorization
+
+    const token = authorizations?.split(" ")[1] || ""
+    console.log(authorizations)
+    try {
+      const payload = jwt.verify(token, "maclesecrete") as TokenPayload 
+      
+      if (payload.userId != "toto") {
+        res.status(403)
+        res.json()
+      } 
+      res.status(200)
+      res.json({user: payload.userId})
+      return
+
+    } catch(err) {
+      res.status(401)
+      res.json()
+
+    }
+    res.status(401)
+    res.json()
   })
 
   server.post("/capture/:id", (req, res, next) => {
